@@ -1,0 +1,38 @@
+These values are recommended in a 1988 paper by Park and Miller [11].
+This old Matlab multiplicative congruential generator is available in the  randmcg. The statement
+randgui(@randmcg)
+shows that the points do not suffer the correlation of the SSP generator. They
+generate a much better “random” cloud within the cube.
+Like our toy generator, randmcg and the old version of the Matlab function
+rand generate all real numbers of the form k/m for k = 1, . . . , m − 1. The smallest
+and largest are 0.00000000046566 and 0.99999999953434. The sequence repeats
+itself after m − 1 values, which is a little over 2 billion numbers. A few years ago,
+that was regarded as plenty. But today, an 800 MHz Pentium laptop can exhaust
+the period in less than half an hour. Of course, to do anything useful with 2 billion
+numbers takes more time, but we would still like to have a longer period.
+In 1995, version 5 of Matlab introduced a completely different kind of random
+number generator. The algorithm is based on work of George Marsaglia, a professor
+at Florida State University and author of the classic analysis of random number
+generators, “Random numbers fall mainly in the planes” [6].
+Marsaglia’s generator [9] does not use Lehmer’s congruential algorithm. In
+fact, there are no multiplications or divisions at all. It is specifically designed to
+produce floating-point values. The results are not just scaled integers. In place of a
+single seed, the new generator has 35 words of internal memory or state. Thirty-two
+of these words form a cache of floating-point numbers, z, between 0 and 1. The
+remaining three words contain an integer index i, which varies between 0 and 31, a
+single random integer j, and a “borrow” flag b. This entire state vector is built up
+a bit at a time during an initialization phase. Different values of j yield different
+initial states.
+The generation of the ith floating-point number in the sequence involves a
+“subtract-with-borrow” step, where one number in the cache is replaced with the
+difference of two others:
+zi = zi+20 − zi+5 − b.
+The three indices, i, i+ 20, and i+ 5, are all interpreted mod 32 (by using just their
+last five bits). The quantity b is left over from the previous step; it is either zero or
+a small positive value. If the computed zi
+is positive, b is set to zero for the next
+step. But if the computed zi
+is negative, it is made positive by adding 1.0 before it
+is saved and b is set to 2−53 for the next step. The quantity 2−53, which is half of
+the Matlab constant eps, is called one ulp because it is one unit in the last place
+for floating-point numbers slightly less than 1
